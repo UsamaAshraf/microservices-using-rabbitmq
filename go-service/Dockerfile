@@ -49,6 +49,8 @@ ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
 RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
 WORKDIR $GOPATH
 
+RUN go get github.com/streadway/amqp
+
 # Create and define the container's working directory.
 RUN mkdir /go-service
 WORKDIR /go-service

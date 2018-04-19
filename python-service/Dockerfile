@@ -114,6 +114,8 @@ RUN set -ex; \
 		\) -exec rm -rf '{}' +; \
 	rm -f get-pip.py
 
+RUN pip install pika
+
 # Create and define the container's working directory.
 RUN mkdir /python-service
 WORKDIR /python-service
