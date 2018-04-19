@@ -7,7 +7,7 @@ services:
     python-service:
         build: ./python-service
         depends_on:
-          - server
+          - rabbitmq-server
         tty: true
         ports:
             - "3000:3000"
@@ -16,6 +16,8 @@ services:
 
     go-service:
         build: ./go-service
+        depends_on:
+          - rabbitmq-server
         tty: true
         volumes:
           - './go-service:/goservice'
