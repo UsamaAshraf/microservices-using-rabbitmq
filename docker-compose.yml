@@ -1,0 +1,25 @@
+version: "3.2"
+services:
+    rabbitmq-server:
+        build: ./rabbitmq-server
+        tty: true
+
+    python-service:
+        build: ./python-service
+        depends_on:
+          - server
+        tty: true
+        ports:
+            - "3000:3000"
+        volumes:
+          - './python-service:/pythonservice'
+
+    go-service:
+        build: ./go-service
+        tty: true
+        volumes:
+          - './go-service:/goservice'
+
+volumes:
+  python-service:
+  go-service:
