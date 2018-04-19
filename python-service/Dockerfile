@@ -1,44 +1,4 @@
-FROM ubuntu
-
-LABEL authors="Usama"
-
-ENV THRIFT_VERSION 0.11.0
-
-RUN buildDeps=" \
-		automake \
-		bison \
-		curl \
-		flex \
-		g++ \
-		libboost-dev \
-		libboost-filesystem-dev \
-		libboost-program-options-dev \
-		libboost-system-dev \
-		libboost-test-dev \
-		libevent-dev \
-		libssl-dev \
-		libtool \
-		make \
-		pkg-config \
-	"; \
-	apt-get update && apt-get install -y --no-install-recommends $buildDeps && rm -rf /var/lib/apt/lists/* \
-	&& curl -sSL "http://apache.mirrors.spacedump.net/thrift/$THRIFT_VERSION/thrift-$THRIFT_VERSION.tar.gz" -o thrift.tar.gz \
-	&& mkdir -p /usr/src/thrift \
-	&& tar zxf thrift.tar.gz -C /usr/src/thrift --strip-components=1 \
-	&& rm thrift.tar.gz \
-	&& cd /usr/src/thrift \
-	&& ./configure  --without-python --without-cpp \
-	&& make \
-	&& make install \
-	&& cd / \
-	&& rm -rf /usr/src/thrift \
-	&& curl -k -sSL "https://storage.googleapis.com/golang/go1.4.linux-amd64.tar.gz" -o go.tar.gz \
-	&& tar xzf go.tar.gz \
-	&& rm go.tar.gz \
-	&& cp go/bin/gofmt /usr/bin/gofmt \
-	&& rm -rf go \
-	&& apt-get purge -y --auto-remove $buildDeps
-
+FROM debian:stretch-slim
 
 # ensure local python is preferred over distribution python
 ENV PATH /usr/local/bin:$PATH
@@ -49,32 +9,48 @@ ENV LANG C.UTF-8
 
 # runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-		tcl \
-		tk \
+		ca-certificates \
+		libexpat1 \
+		libffi6 \
+		libgdbm3 \
+		libreadline7 \
+		libsqlite3-0 \
+		libssl1.1 \
 	&& rm -rf /var/lib/apt/lists/*
 
 ENV GPG_KEY 0D96DF4D4110E5C43FBFB17F2D347EA6AA65421D
 ENV PYTHON_VERSION 3.6.5
 
-#RUN apt-get install -y wget
-
 RUN set -ex \
-	&& buildDeps=' \
+	&& buildDeps=" \
 		dpkg-dev \
+		gcc \
+		libbz2-dev \
+		libc6-dev \
+		libexpat1-dev \
+		libffi-dev \
+		libgdbm-dev \
+		liblzma-dev \
+		libncursesw5-dev \
+		libreadline-dev \
+		libsqlite3-dev \
+		libssl-dev \
+		make \
 		tcl-dev \
 		tk-dev \
-        wget \
-        g++ \
-        gcc \
-        make \
-	' \
+		wget \
+		xz-utils \
+		zlib1g-dev \
+# as of Stretch, "gpg" is no longer included by default
+		$(command -v gpg > /dev/null || echo 'gnupg dirmngr') \
+	" \
 	&& apt-get update && apt-get install -y $buildDeps --no-install-recommends && rm -rf /var/lib/apt/lists/* \
 	\
-	&& wget -O python.tar.xz "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz" --no-check-certificate \
-	&& wget -O python.tar.xz.asc "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz.asc" --no-check-certificate \
+	&& wget -O python.tar.xz "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz" \
+	&& wget -O python.tar.xz.asc "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz.asc" \
 	&& export GNUPGHOME="$(mktemp -d)" \
-	#&& gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$GPG_KEY" \
-	#&& gpg --batch --verify python.tar.xz.asc python.tar.xz \
+	&& gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$GPG_KEY" \
+	&& gpg --batch --verify python.tar.xz.asc python.tar.xz \
 	&& rm -rf "$GNUPGHOME" python.tar.xz.asc \
 	&& mkdir -p /usr/src/python \
 	&& tar -xJC /usr/src/python --strip-components=1 -f python.tar.xz \
@@ -110,19 +86,34 @@ RUN cd /usr/local/bin \
 	&& ln -s python3 python \
 	&& ln -s python3-config python-config
 
-
 # if this is called "PIP_VERSION", pip explodes with "ValueError: invalid truth value '<VERSION>'"
-ENV PYTHON_PIP_VERSION 10.0.0
+ENV PYTHON_PIP_VERSION 9.0.3
 
-RUN apt-get update && apt-get install -y \
-    python3-pip
+RUN set -ex; \
+	\
+	apt-get update; \
+	apt-get install -y --no-install-recommends wget; \
+	rm -rf /var/lib/apt/lists/*; \
+	\
+	wget -O get-pip.py 'https://bootstrap.pypa.io/get-pip.py'; \
+	\
+	apt-get purge -y --auto-remove wget; \
+	\
+	python get-pip.py \
+		--disable-pip-version-check \
+		--no-cache-dir \
+		"pip==$PYTHON_PIP_VERSION" \
+	; \
+	pip --version; \
+	\
+	find /usr/local -depth \
+		\( \
+			\( -type d -a \( -name test -o -name tests \) \) \
+			-o \
+			\( -type f -a \( -name '*.pyc' -o -name '*.pyo' \) \) \
+		\) -exec rm -rf '{}' +; \
+	rm -f get-pip.py
 
-
-
-
-
-
-
-RUN mkdir /theclient
-# Define working directory.
-WORKDIR /theclient
+# Create and define the container's working directory.
+RUN mkdir /python-service
+WORKDIR /python-service

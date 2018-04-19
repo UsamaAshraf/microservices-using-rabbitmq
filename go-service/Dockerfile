@@ -1,68 +1,54 @@
-FROM debian:wheezy
+FROM buildpack-deps:stretch-scm
 
-LABEL authors="Usama"
-
-# Install Thrift.
-
-ENV THRIFT_VERSION 0.11.0
-
-RUN buildDeps=" \
-		automake \
-		bison \
-		curl \
-		flex \
+# gcc for cgo
+RUN apt-get update && apt-get install -y --no-install-recommends \
 		g++ \
-		libboost-dev \
-		libboost-filesystem-dev \
-		libboost-program-options-dev \
-		libboost-system-dev \
-		libboost-test-dev \
-		libevent-dev \
-		libssl-dev \
-		libtool \
+		gcc \
+		libc6-dev \
 		make \
 		pkg-config \
-	"; \
-	apt-get update && apt-get install -y --no-install-recommends $buildDeps && rm -rf /var/lib/apt/lists/* \
-	&& curl -sSL "http://apache.mirrors.spacedump.net/thrift/$THRIFT_VERSION/thrift-$THRIFT_VERSION.tar.gz" -o thrift.tar.gz \
-	&& mkdir -p /usr/src/thrift \
-	&& tar zxf thrift.tar.gz -C /usr/src/thrift --strip-components=1 \
-	&& rm thrift.tar.gz \
-	&& cd /usr/src/thrift \
-	&& ./configure  --without-python --without-cpp \
-	&& make \
-	&& make install \
-	&& cd / \
-	&& rm -rf /usr/src/thrift \
-	&& curl -k -sSL "https://storage.googleapis.com/golang/go1.4.linux-amd64.tar.gz" -o go.tar.gz \
-	&& tar xzf go.tar.gz \
-	&& rm go.tar.gz \
-	&& cp go/bin/gofmt /usr/bin/gofmt \
-	&& rm -rf go \
-	&& apt-get purge -y --auto-remove $buildDeps
+	&& rm -rf /var/lib/apt/lists/*
 
-# Install Go.
+ENV GOLANG_VERSION 1.10.1
 
-RUN apt-get update
-RUN apt-get -f install
-RUN apt-get install -y ca-certificates
-RUN apt-get install -y curl
-
-RUN curl -O https://storage.googleapis.com/golang/go1.10.1.linux-amd64.tar.gz
-#RUN sha256sum go1.10*.tar.gz
-RUN tar xvf go1.10.1.linux-amd64.tar.gz
-
-RUN chown -R root:root ./go
-RUN mv go /usr/local
-RUN export PATH="/usr/local/go/bin:$PATH"; \
+RUN set -eux; \
+	\
+# this "case" statement is generated via "update.sh"
+	dpkgArch="$(dpkg --print-architecture)"; \
+	case "${dpkgArch##*-}" in \
+		amd64) goRelArch='linux-amd64'; goRelSha256='72d820dec546752e5a8303b33b009079c15c2390ce76d67cf514991646c6127b' ;; \
+		armhf) goRelArch='linux-armv6l'; goRelSha256='feca4e920d5ca25001dc0823390df79bc7ea5b5b8c03483e5a2c54f164654936' ;; \
+		arm64) goRelArch='linux-arm64'; goRelSha256='1e07a159414b5090d31166d1a06ee501762076ef21140dcd54cdcbe4e68a9c9b' ;; \
+		i386) goRelArch='linux-386'; goRelSha256='acbe19d56123549faf747b4f61b730008b185a0e2145d220527d2383627dfe69' ;; \
+		ppc64el) goRelArch='linux-ppc64le'; goRelSha256='91d0026bbed601c4aad332473ed02f9a460b31437cbc6f2a37a88c0376fc3a65' ;; \
+		s390x) goRelArch='linux-s390x'; goRelSha256='e211a5abdacf843e16ac33a309d554403beb63959f96f9db70051f303035434b' ;; \
+		*) goRelArch='src'; goRelSha256='589449ff6c3ccbff1d391d4e7ab5bb5d5643a5a41a04c99315e55c16bbf73ddc'; \
+			echo >&2; echo >&2 "warning: current architecture ($dpkgArch) does not have a corresponding Go binary release; will be building from source"; echo >&2 ;; \
+	esac; \
+	\
+	url="https://golang.org/dl/go${GOLANG_VERSION}.${goRelArch}.tar.gz"; \
+	wget -O go.tgz "$url"; \
+	echo "${goRelSha256} *go.tgz" | sha256sum -c -; \
+	tar -C /usr/local -xzf go.tgz; \
+	rm go.tgz; \
+	\
+	if [ "$goRelArch" = 'src' ]; then \
+		echo >&2; \
+		echo >&2 'error: UNIMPLEMENTED'; \
+		echo >&2 'TODO install golang-any from jessie-backports for GOROOT_BOOTSTRAP (and uninstall after build)'; \
+		echo >&2; \
+		exit 1; \
+	fi; \
+	\
+	export PATH="/usr/local/go/bin:$PATH"; \
 	go version
+
 ENV GOPATH /go
 ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
-RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
 
-# This will be required later for pulling in Go's Thrift library.
-RUN apt-get install -y git
+RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
+WORKDIR $GOPATH
 
 # Create and define the container's working directory.
-RUN mkdir /theserver
-WORKDIR /theserver
+RUN mkdir /go-service
+WORKDIR /go-service
