@@ -5,6 +5,7 @@ services:
 
     python-service:
         build: ./python-service
+        # 'rabbitmq-server' will be available as a network reference inside this service.
         depends_on:
           - rabbitmq-server
         tty: true
@@ -15,6 +16,7 @@ services:
 
     go-service:
         build: ./go-service
+        # 'rabbitmq-server' will be available as a network reference inside this service.
         depends_on:
           - rabbitmq-server
         tty: true
