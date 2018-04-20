@@ -29,14 +29,14 @@ RUN set -eux; \
 	wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$dpkgArch.asc"; \
 	\
 # verify the signature
-	export GNUPGHOME="$(mktemp -d)"; \
-	gpg --keyserver ha.pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4; \
-	gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu; \
-	rm -rf "$GNUPGHOME" /usr/local/bin/gosu.asc; \
-	\
-	chmod +x /usr/local/bin/gosu; \
+#	export GNUPGHOME="$(mktemp -d)"; \
+#	gpg --keyserver ha.pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4; \
+#	gpg --batch --verify /usr/local/bin/gosu.asc /usr/local/bin/gosu; \
+#	rm -rf "$GNUPGHOME" /usr/local/bin/gosu.asc; \
+#	\
+#	chmod +x /usr/local/bin/gosu; \
 # verify that the binary works
-	gosu nobody true; \
+#	gosu nobody true; \
 	\
 	apt-get purge -y --auto-remove $fetchDeps
 
@@ -139,6 +139,7 @@ RUN ln -sf "/usr/lib/rabbitmq/lib/rabbitmq_server-$RABBITMQ_VERSION/plugins" /pl
 
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN ln -s usr/local/bin/docker-entrypoint.sh / # backwards compat
+RUN ["chmod", "+x", "./docker-entrypoint.sh"]
 ENTRYPOINT ["./docker-entrypoint.sh"]
 
 EXPOSE 4369 5671 5672 25672

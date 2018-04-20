@@ -24,12 +24,12 @@ file_env() {
 }
 
 # allow the container to be started with `--user`
-if [[ "$1" == rabbitmq* ]] && [ "$(id -u)" = '0' ]; then
-	if [ "$1" = 'rabbitmq-server' ]; then
-		chown -R rabbitmq /var/lib/rabbitmq
-	fi
-	exec gosu rabbitmq "$BASH_SOURCE" "$@"
-fi
+#if [[ "$1" == rabbitmq* ]] && [ "$(id -u)" = '0' ]; then
+#	if [ "$1" = 'rabbitmq-server' ]; then
+#		chown -R rabbitmq /var/lib/rabbitmq
+#	fi
+#	exec gosu rabbitmq "$BASH_SOURCE" "$@"
+#fi
 
 # backwards compatibility for old environment variables
 : "${RABBITMQ_SSL_CERTFILE:=${RABBITMQ_SSL_CERT_FILE:-}}"
