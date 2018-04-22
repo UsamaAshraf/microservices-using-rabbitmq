@@ -144,4 +144,5 @@ ENTRYPOINT ["./docker-entrypoint.sh"]
 
 EXPOSE 4369 5671 5672 25672
 
+# Start the RabbitMQ broker and keep the container running.
 CMD ["rabbitmq-server"]
