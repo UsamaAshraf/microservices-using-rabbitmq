@@ -8,22 +8,22 @@ services:
         # 'rabbitmq-server' will be available as a network reference inside this service 
         # and this service will start only after the RabbitMQ service has.
         depends_on:
-          - rabbitmq-server
+            - rabbitmq-server
         # Keep it running.  
         tty: true
         # Map port 3000 on the host machine to port 3000 of the container.
         ports:
             - "3000:3000"
         volumes:
-          - './python-service:/python-service'
+            - './python-service:/python-service'
 
     go-service:
         build: ./go-service
         depends_on:
-          - rabbitmq-server
+            - rabbitmq-server
         tty: true
         volumes:
-          - './go-service:/go-service'
+            - './go-service:/go-service'
 
 # Host volumes used to store code.
 volumes:
