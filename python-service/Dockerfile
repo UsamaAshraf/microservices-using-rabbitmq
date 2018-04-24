@@ -116,6 +116,8 @@ RUN set -ex; \
 
 RUN pip install pika
 
+RUN pip install Flask
+
 # Create and define the container's working directory.
 RUN mkdir /python-service
 WORKDIR /python-service
