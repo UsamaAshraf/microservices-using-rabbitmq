@@ -1,10 +1,14 @@
 from flask import Flask
 from flask import request
+from flask import jsonify
+from services.user_event_handler import emit_user_profile_update
 
 app = Flask(__name__)
 
 @app.route('/users/<int:user_id>', methods=['POST'])
 def update(user_id):
     new_name = request.form['full_name']
-    #TODO: Emit the event...
-    return make_response({full_name: new_name}, 201)
+    # Update the user in the datastore...
+    emit_user_profile_update(user_id, {'full_name': new_name})
+
+    return jsonify({'full_name': new_name}), 201
