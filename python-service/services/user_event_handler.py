@@ -5,11 +5,17 @@ def emit_user_profile_update(user_id, new_data):
     connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbitmq-server'))
     channel = connection.channel()
 
-    channel.exchange_declare(exchange='user_updates', exchange_type='topic')
+    exchange_name = 'user_updates'
+    routing_key = 'user.profile.update'
+    channel.exchange_declare(exchange=exchange_name, exchange_type='topic')
+    
+    channel.basic_publish(exchange=exchange_name,
+                          routing_key=routing_key,
+                          body=json.dumps(new_data),
+                          # Delivery mode 2 makes the broker save the message to disk.
+                          properties=pika.BasicProperties(
+                            delivery_mode = 2,
+                        ))
 
-    channel.basic_publish(exchange='topic_logs',
-                          routing_key='user.profile.update',
-                          body=json.dumps(new_data))
-
-    print("Sent %r:%r:%r" % ('topic_logs', 'user.profile.update', new_data))
+    print("Event %r fired off to exchange %r with data: %r" % (routing_key, exchange_name, new_data))
     connection.close()
