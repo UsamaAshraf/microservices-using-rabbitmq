@@ -10,7 +10,7 @@ def emit_user_profile_update(user_id, new_data):
     routing_key = 'user.profile.update'
 
     # This will create the exchange if it doesn't already exist.
-    channel.exchange_declare(exchange=exchange_name, exchange_type='topic')
+    channel.exchange_declare(exchange=exchange_name, exchange_type='topic', durable=True)
     
     new_data['id'] = user_id
 
