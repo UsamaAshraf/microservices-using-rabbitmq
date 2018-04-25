@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"github.com/streadway/amqp"
 )
 
@@ -40,7 +41,7 @@ func main() {
 	
 
 	q, err := ch.QueueDeclare(
-		"x",    // name
+		"",    // name
 		true,  // durable
 		false, // delete when usused
 		false,  // exclusive
@@ -76,7 +77,7 @@ func main() {
 
 	go func() {
 		for d := range msgs {
-			fmt.Sprintf("Received: %s", d.Body)
+			log.Printf("Received: %s", d.Body)
 		}
 	}()
 	
