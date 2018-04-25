@@ -9,7 +9,7 @@ app = Flask(__name__)
 def update(user_id):
     new_name = request.form['full_name']
 
-    # Update the user in the datastore...
+    # Update the user in the datastore using a local transaction...
     
     emit_user_profile_update(user_id, {'full_name': new_name})
 

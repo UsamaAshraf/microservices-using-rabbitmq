@@ -83,7 +83,8 @@ func main() {
 		for d := range msgs {
 			log.Printf("Received message: %s", d.Body)
 
-			// Update the user data on the service's associated datastore...
+			// Update the user data on the service's 
+			// associated datastore using a local transaction...
 
 			// The 'false' indicates the success of a single delivery, 'true' would mean that
 			// this delivery and all prior unacknowledged deliveries on this channel will be
