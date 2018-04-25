@@ -44,13 +44,14 @@ func main() {
 	// Create the queue if it doesn't already exist.
 	// This does not need to be done in the publisher because the
 	// queue is only relevant to the consumer, which subscribes to it.
+	// Like the exchange, let's make it durable (saved to disk) too.
 	q, err := ch.QueueDeclare(
 			"",    // name - empty means a random, unique name will be assigned
 			true,  // durable
 			false, // delete when unused
-			false, // exclusive
-			false, // no-wait
-			nil,   // arguments
+			false, 
+			false, 
+			nil,   
 	)
 	failOnError(err, "Error creating the queue")
 
