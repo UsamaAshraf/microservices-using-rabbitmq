@@ -2,7 +2,8 @@ import pika
 import json
 
 def emit_user_profile_update(user_id, new_data):
-    # 'rabbitmq-server' is the network reference we have to the broker, thanks to Docker Compose.
+    # 'rabbitmq-server' is the network reference we have to the broker, 
+    # thanks to Docker Compose.
     connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbitmq-server'))
     channel = connection.channel()
 
@@ -22,5 +23,5 @@ def emit_user_profile_update(user_id, new_data):
                             delivery_mode = 2,
                         ))
 
-    print("Event %r fired off to exchange %r with data: %r" % (routing_key, exchange_name, new_data))
+    print("%r sent to exchange %r with data: %r" % (routing_key, exchange_name, new_data))
     connection.close()
