@@ -64,7 +64,7 @@ func main() {
 	)
 	failOnError(err, "Error binding the queue")
 
-	
+	// Subscribe to the queue.
 	msgs, err := ch.Consume(
 			q.Name, // queue
 			"",     // consumer id - empty means a random, unique id will be assigned
@@ -81,7 +81,7 @@ func main() {
 
 	go func() {
 		for d := range msgs {
-			log.Printf("Received: %s", d.Body)
+			log.Printf("Received message: %s", d.Body)
 
 			// Update the user data on the service's associated datastore...
 

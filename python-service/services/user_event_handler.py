@@ -5,10 +5,10 @@ def emit_user_profile_update(user_id, new_data):
     # 'rabbitmq-server' is the network reference we have to the broker, 
     # thanks to Docker Compose.
     connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbitmq-server'))
-    channel = connection.channel()
+    channel    = connection.channel()
 
     exchange_name = 'user_updates'
-    routing_key = 'user.profile.update'
+    routing_key   = 'user.profile.update'
 
     # This will create the exchange if it doesn't already exist.
     channel.exchange_declare(exchange=exchange_name, exchange_type='topic', durable=True)
