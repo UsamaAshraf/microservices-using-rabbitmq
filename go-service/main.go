@@ -8,7 +8,6 @@ import (
 
 func failOnError(err error, msg string) {
 	if err != nil {
-		fmt.Sprintf("%s: %s", msg, err)
 		// Exit the program.
 		panic(fmt.Sprintf("%s: %s", msg, err))
 	}
@@ -28,25 +27,25 @@ func main() {
 	defer ch.Close()
 	
 	exchangeName := "user_updates"
-	bindingKey := "user.profile.*"
+	bindingKey   := "user.profile.*"
 
 	// Create the exchange if it doesn't already exist.
 	err = ch.ExchangeDeclare(
 			exchangeName, 	// name
 			"topic",  		// type
 			true,         	// durable
-			false,        	// auto-deleted
-			false,        	// internal
-			false,        	// no-wait
-			nil,          	// arguments
+			false,
+			false,
+			false,
+			nil,
 	)
 	failOnError(err, "Error creating the exchange")
 	
-	// Create the exchange if it doesn't already exist.
-	// This does not need to be done in the publisher since the
+	// Create the queue if it doesn't already exist.
+	// This does not need to be done in the publisher because the
 	// queue is only relevant to the consumer, which subscribes to it.
 	q, err := ch.QueueDeclare(
-			"",    // name
+			"",    // name - empty means a random, unique name will be assigned
 			true,  // durable
 			false, // delete when unused
 			false, // exclusive
@@ -55,7 +54,7 @@ func main() {
 	)
 	failOnError(err, "Error creating the queue")
 
-	// Bind the exchange to the queue based on a string pattern (binding key).
+	// Bind the queue to the exchange based on a string pattern (binding key).
 	err = ch.QueueBind(
 			q.Name,       // queue name
 			bindingKey,   // binding key
@@ -68,12 +67,12 @@ func main() {
 	
 	msgs, err := ch.Consume(
 			q.Name, // queue
-			"",     // consumer
-			false,  // auto ack
-			false,  // exclusive
-			false,  // no local
-			false,  // no wait
-			nil,    // args
+			"",     // consumer id - empty means a random, unique id will be assigned
+			false,  // auto acknowledgement of message delivery
+			false,  
+			false,  
+			false,  
+			nil,
 	)
 	failOnError(err, "Failed to register as a consumer")
 
@@ -87,8 +86,8 @@ func main() {
 			// Update the user data on the service's associated datastore...
 
 			// The 'false' indicates the success of a single delivery, 'true' would mean that
-			// this delivery and all prior unacknowledged deliveries on this channel will be acknowledged,
-			// which I find no reason to do in this example.
+			// this delivery and all prior unacknowledged deliveries on this channel will be
+			// acknowledged, which I find no reason for in this example.
 			d.Ack(false)
 		}
 	}()
