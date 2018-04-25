@@ -12,6 +12,8 @@ def emit_user_profile_update(user_id, new_data):
     # This will create the exchange if it doesn't already exist.
     channel.exchange_declare(exchange=exchange_name, exchange_type='topic')
     
+    new_data['id'] = user_id
+
     channel.basic_publish(exchange=exchange_name,
                           routing_key=routing_key,
                           body=json.dumps(new_data),
