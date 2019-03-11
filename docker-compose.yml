@@ -16,6 +16,7 @@ services:
             - "3000:3000"
         volumes:
             - './python-service:/python-service'
+        command: bash -c "FLASK_APP=main.py python -m flask run --port 3000 --host 0.0.0.0"
 
     go-service:
         build: ./go-service
@@ -24,6 +25,7 @@ services:
         tty: true
         volumes:
             - './go-service:/go-service'
+        command: bash -c "go run main.go"
 
 # Host volumes used to store code.
 volumes:
