@@ -1,7 +1,7 @@
 version: "3.2"
 services:
     rabbitmq-server:
-        build: ./rabbitmq-server
+        image: rabbitmq:latest
 
     python-service:
         build: ./python-service
