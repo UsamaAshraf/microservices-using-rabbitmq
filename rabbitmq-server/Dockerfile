@@ -1,5 +1,6 @@
 # https://github.com/docker-library/rabbitmq/blob/1a37166704d2ca7c386980387e81615985d5db47/3.7/debian/Dockerfile
-FROM debian:stretch-slim
+FROM debian:buster-slim 
+
 
 RUN set -eux; \
 	apt-get update; \
@@ -40,26 +41,7 @@ RUN set -eux; \
 	\
 	apt-get purge -y --auto-remove $fetchDeps
 
-# RabbitMQ 3.6.15+ requires Erlang 19.3+ (and Stretch only has 19.2); https://www.rabbitmq.com/which-erlang.html
-# so we'll pull Erlang from Buster instead (not using Erlang Solutions since their multiarch support is extremely limited)
-RUN set -eux; \
-# add buster sources.list
-	sed 's/stretch/buster/g' /etc/apt/sources.list \
-		| tee /etc/apt/sources.list.d/buster.list; \
-# update apt-preferences such that we get only erlang* from buster (and erlang* only from buster)
-	{ \
-		echo 'Package: *'; \
-		echo 'Pin: release n=buster*'; \
-		echo 'Pin-Priority: -10'; \
-		echo; \
-		echo 'Package: erlang*'; \
-		echo 'Pin: release n=buster*'; \
-		echo 'Pin-Priority: 999'; \
-		echo; \
-		echo 'Package: erlang*'; \
-		echo 'Pin: release n=stretch*'; \
-		echo 'Pin-Priority: -10'; \
-	} | tee /etc/apt/preferences.d/buster-erlang
+
 
 # install Erlang
 RUN set -eux; \
@@ -96,9 +78,9 @@ ENV PATH /usr/lib/rabbitmq/bin:$PATH
 # gpg: key 6026DFCA: public key "RabbitMQ Release Signing Key <info@rabbitmq.com>" imported
 ENV RABBITMQ_GPG_KEY 0A9AF2115F4687BD29803A206B73A36E6026DFCA
 
-ENV RABBITMQ_VERSION 3.7.4
-ENV RABBITMQ_GITHUB_TAG v3.7.4
-ENV RABBITMQ_DEBIAN_VERSION 3.7.4-1
+ENV RABBITMQ_VERSION 3.7.16
+ENV RABBITMQ_GITHUB_TAG v3.7.16
+ENV RABBITMQ_DEBIAN_VERSION 3.7.16-1
 
 RUN set -eux; \
 	\
