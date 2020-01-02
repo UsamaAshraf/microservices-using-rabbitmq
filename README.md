@@ -10,3 +10,7 @@ git clone https://github.com/UsamaAshraf/microservices-using-rabbitmq.git
 # Usage
 
 docker-compose up
+
+# License
+
+MIT
